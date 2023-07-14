@@ -6,10 +6,10 @@ Created: Mon Jul 18 21:25:01 2022
  */
 
 import 'package:flutter/material.dart';
-import 'package:aporia_app/screens/home_page.dart';
-import 'package:aporia_app/screens/leaderboards.dart';
-import 'package:aporia_app/screens/settings_page.dart';
-import 'package:aporia_app/widgets/forks/search_bar.dart';
+import 'package:two_cousins/screens/home_page.dart';
+import 'package:two_cousins/screens/leaderboards.dart';
+import 'package:two_cousins/screens/settings_page.dart';
+import 'package:two_cousins/widgets/forks/search_bar.dart';
 
 typedef StringCallback = Future<void> Function(String string);
 

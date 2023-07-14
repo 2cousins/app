@@ -15,9 +15,9 @@ jobs:
           java-version: '12.x'
       - uses: subosito/flutter-action@v1
         with:
-          flutter-version: '3.x'
+          flutter-version: '3.x'f
           channel: 'stable'
       - run: flutter clean
       - uses: bluefireteam/flutter-gh-pages@v7
         with:
-          baseHref: /aporia-network/
+          baseHref: /

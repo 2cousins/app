@@ -10,8 +10,8 @@ import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:aporia_app/screens/post_creation/edit_question.dart';
-import 'package:aporia_app/utils/components.dart';
+import 'package:two_cousins/screens/post_creation/edit_question.dart';
+import 'package:two_cousins/utils/components.dart';
 import 'package:uuid/uuid.dart';
 import 'package:collection/src/iterable_extensions.dart';
 

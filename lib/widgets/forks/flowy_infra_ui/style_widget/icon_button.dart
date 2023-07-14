@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:aporia_app/widgets/forks/flowy_infra_ui/style_widget/hover.dart';
+import 'package:two_cousins/widgets/forks/flowy_infra_ui/style_widget/hover.dart';
 import 'package:flutter/material.dart';
 
 import '../widget/image.dart';

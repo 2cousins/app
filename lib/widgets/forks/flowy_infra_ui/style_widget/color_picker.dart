@@ -1,4 +1,4 @@
-import 'package:aporia_app/widgets/forks/flowy_infra_ui/flowy_infra_ui.dart';
+import 'package:two_cousins/widgets/forks/flowy_infra_ui/flowy_infra_ui.dart';
 import 'package:flutter/material.dart';
 
 import '../widget/image.dart';

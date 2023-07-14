@@ -9,9 +9,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:aporia_app/screens/post_creation/create_post_view.dart';
+import 'package:two_cousins/screens/post_creation/create_post_view.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:aporia_app/utils/config/config.dart' as config;
+import 'package:two_cousins/utils/config/config.dart' as config;
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);

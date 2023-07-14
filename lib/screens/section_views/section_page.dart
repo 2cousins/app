@@ -9,11 +9,11 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:algolia/algolia.dart';
-import 'package:aporia_app/screens/post_creation/create_post_view.dart';
-import 'package:aporia_app/screens/section_views/post_view.dart';
-import 'package:aporia_app/screens/section_views/quiz_view.dart';
-import 'package:aporia_app/widgets/section_app_bar.dart';
-import 'package:aporia_app/widgets/action_card.dart';
+import 'package:two_cousins/screens/post_creation/create_post_view.dart';
+import 'package:two_cousins/screens/section_views/post_view.dart';
+import 'package:two_cousins/screens/section_views/quiz_view.dart';
+import 'package:two_cousins/widgets/section_app_bar.dart';
+import 'package:two_cousins/widgets/action_card.dart';
 import 'dart:ui';
 
 /// An enum for the type of post.
