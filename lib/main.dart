@@ -24,7 +24,6 @@ void main() async {
   // Initialises Firebase.
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    name: "2cousins",
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
