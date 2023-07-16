@@ -213,27 +213,15 @@ Widget userInfo(BuildContext context,
         splashColor: Theme.of(context).colorScheme.primary.withAlpha(40),
         highlightColor: Theme.of(context).colorScheme.primary.withAlpha(20),
         onTap: () {
-          // Clicking the userInfo widget either goes to settings or
-          // schedule view depending on if the scheduling module is
-          // enabled or not.
-          if (abilities.contains('scheduling')) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ScheduleView(
-                      jobList: profileMap?['jobList'], isCompany: isCompany)),
-            );
-          } else {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => SettingsPage(
-                        userData: userData,
-                        userRoles: userRoles,
-                        isAdmin: isAdmin,
-                      )),
-            );
-          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => SettingsPage(
+                  userData: userData,
+                  userRoles: userRoles,
+                  isAdmin: isAdmin,
+                )),
+          );
         },
         child: SizedBox(
           height: 175,
@@ -524,6 +512,7 @@ class _HomePageState extends State<HomePage> {
                                               userRoles: userRoles,
                                               configMap: config.configMap,
                                               userData: widget.userData,
+                                              profileMap: profileMap,
                                               customButtons: abilities
                                                       .contains('volunteering')
                                                   ? [
@@ -558,27 +547,31 @@ class _HomePageState extends State<HomePage> {
                                               ConnectionState.active) {
                                             // Builds section cards based on the
                                             // postGroups a user is a part of.
+                                            List docs = postsGroupSnapshot.data?.docs ?? [];
+                                            docs.sort((a, b) => a.data()['order'].compareTo(b.data()['order']));
+
                                             return ListView.builder(
-                                                physics:
-                                                    const NeverScrollableScrollPhysics(),
+                                                physics: const NeverScrollableScrollPhysics(),
                                                 shrinkWrap: true,
                                                 padding: EdgeInsets.zero,
-                                                itemCount: postsGroupSnapshot
-                                                    .data?.docs.length,
+                                                itemCount: docs.length,
                                                 itemBuilder:
                                                     (BuildContext context,
                                                         int index) {
-                                                  return sectionCard(
-                                                    context,
-                                                    widget.userData,
-                                                    postsGroupSnapshot.data
-                                                        ?.docs[index]["tag"],
-                                                    postsGroupSnapshot
-                                                        .data?.docs[index].id,
-                                                    rolesSnapshot.data?.docs[0]
-                                                        ['tag'],
-                                                    userRoles,
-                                                  );
+                                                  Map<String, dynamic>? postData = docs[index].data() as Map<String, dynamic>?;
+
+                                                  if ((postData?['apps'] ?? []).contains(config.appID)) {
+                                                    return sectionCard(
+                                                      context,
+                                                      widget.userData,
+                                                      postData?["tag"],
+                                                      docs[index].id,
+                                                      rolesSnapshot.data?.docs[0]['tag'],
+                                                      userRoles,
+                                                    );
+                                                  } else {
+                                                    return const SizedBox.shrink();
+                                                  }
                                                 });
                                           } else {
                                             return const Center(

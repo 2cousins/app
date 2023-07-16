@@ -98,11 +98,17 @@ class _ScheduleViewState extends State<ScheduleView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Schedule",
+          "My Schedule",
           style: Theme.of(context).textTheme.titleLarge,
         ),
         backgroundColor: Colors.transparent,
         shadowColor: Colors.transparent,
+        leading: IconButton(
+            icon: Icon(Icons.arrow_back,
+                color: Theme.of(context).primaryColorLight),
+            onPressed: () {
+              Navigator.of(context).pop();
+            }),
       ),
       body: SfCalendar(
         view: CalendarView.schedule,
