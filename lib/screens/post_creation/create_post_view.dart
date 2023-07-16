@@ -6,7 +6,7 @@ Created: Sat Jul 23 18:21:21 2022
  */
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
-import 'package:aporia_app/utils/config/config.dart' as config;
+import 'package:two_cousins/utils/config/config.dart' as config;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
