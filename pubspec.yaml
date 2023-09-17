@@ -30,19 +30,19 @@ dependencies:
   flutter:
     sdk: flutter
   adaptive_theme: ^3.1.1
-  firebase_ui_auth: ^1.4.2
+  firebase_ui_auth: ^1.8.0
   firebase_core: ^2.7.1
   google_sign_in: ^6.1.4
   flutter_svg: ^2.0.0+1
   firebase_auth: ^4.2.10
-  file_selector: ^0.9.2
-  image_picker: ^0.8.5+3
+  file_selector: ^1.0.1
+  image_picker: ^1.0.4
   url_launcher: ^6.1.12
   flutter_extensions: ^5.0.0
   appflowy_editor:
     git:
-      url: https://github.com/AppFLowy-IO/appflowy-editor
-      ref: d87d353
+      url: https://github.com/garv-shah/appflowy-editor
+      ref: d867e3d
   tuple: ^2.0.0
   cupertino_icons: ^1.0.5
   cloud_firestore: ^4.4.4
@@ -52,10 +52,10 @@ dependencies:
   adaptive_dialog: ^1.7.0
   firebase_storage: ^11.0.15
   firebase_storage_web: ^3.3.24
-  mime: ^1.0.2
+  mime: ^1.0.4
   crop_your_image: ^0.7.2
   uuid: ^3.0.6
-  algolia: ^1.1.1
+  algolia: ^1.1.2
   math_keyboard: ^0.2.0
   flutter_native_splash: ^2.2.19
   flutter_math_fork: ^0.7.1
@@ -65,8 +65,8 @@ dependencies:
   scrollable_positioned_list: ^0.2.3
   azlistview: ^2.0.0
   collection: ^1.17.1
-  firebase_ui_oauth_google: ^1.2.2
-  firebase_ui_oauth_apple: ^1.2.2
+  firebase_ui_oauth_google: ^1.2.11
+  firebase_ui_oauth_apple: ^1.2.11
   universal_io: ^2.2.2
   syncfusion_flutter_calendar: ^22.1.37
   intl: ^0.18.0
@@ -77,9 +77,11 @@ dependencies:
   styled_widget: ^0.4.1
   firebase_database: ^10.2.3
   stop_watch_timer: ^3.0.0
+  string_validator: ^1.0.0
 
 dependency_overrides:
   intl: ^0.18.0
+  http: ^1.1.0
   flutter_colorpicker:
     git:
       url: https://github.com/mchome/flutter_colorpicker

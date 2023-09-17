@@ -1,7 +1,9 @@
 
 import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter/material.dart';
-import 'package:two_cousins/utils/theming/app_flowy/mobile_toolbar.dart';
+import 'package:two_cousins/utils/theming/app_flowy/mobile_toolbar.dart' as mobile;
+
+import '../../plugins/inline_math_equation/inline_math_equation_toolbar_item.dart';
 
 List<MobileToolbarItem> getMobileToolbarItems(Color color) {
   return [
@@ -12,13 +14,13 @@ List<MobileToolbarItem> getMobileToolbarItems(Color color) {
         color: color,
       ),
       itemMenuBuilder: (editorState, selection, _) {
-        return TextDecorationMenu(
+        return mobile.TextDecorationMenu(
             editorState,
             color,
             selection);
       },
     ),
-    customBuildTextAndBackgroundColorMobileToolbarItem(color: color),
+    mobile.customBuildTextAndBackgroundColorMobileToolbarItem(color: color),
     //headingMobileToolbarItem,
     MobileToolbarItem.withMenu(
       itemIcon: AFMobileIcon(
@@ -26,7 +28,7 @@ List<MobileToolbarItem> getMobileToolbarItems(Color color) {
         color: color,
       ),
       itemMenuBuilder: (editorState, selection, _) {
-        return HeadingMenu(
+        return mobile.HeadingMenu(
           selection,
           color,
           editorState,
@@ -62,7 +64,7 @@ List<MobileToolbarItem> getMobileToolbarItems(Color color) {
         color: color,
       ),
       itemMenuBuilder: (editorState, selection, _) {
-        return ListMenu(editorState, color, selection);
+        return mobile.ListMenu(editorState, color, selection);
       },
     ),
     //linkMobileToolbarItem,
@@ -77,7 +79,7 @@ List<MobileToolbarItem> getMobileToolbarItems(Color color) {
           selection,
         );
 
-        return MobileLinkMenu(
+        return mobile.MobileLinkMenu(
           editorState: editorState,
           linkText: linkText,
           onSubmitted: (value) async {

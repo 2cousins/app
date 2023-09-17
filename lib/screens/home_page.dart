@@ -544,7 +544,7 @@ class _HomePageState extends State<HomePage> {
                                         builder: (context, postsGroupSnapshot) {
                                           if (postsGroupSnapshot
                                                   .connectionState ==
-                                              ConnectionState.active) {
+                                              ConnectionState.active || postsGroupSnapshot.hasData) {
                                             // Builds section cards based on the
                                             // postGroups a user is a part of.
                                             List docs = postsGroupSnapshot.data?.docs ?? [];
