@@ -16,7 +16,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:two_cousins/screens/section_views/section_page.dart';
-import 'package:two_cousins/screens/settings_page.dart';
+import 'package:two_cousins/screens/settings/settings_page.dart';
 import 'package:two_cousins/utils/components.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:two_cousins/widgets/forks/sleek_circular_slider/appearance.dart';
