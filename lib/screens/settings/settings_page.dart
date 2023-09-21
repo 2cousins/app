@@ -162,14 +162,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(height: 60,),
                 Center(
                   child: Padding(
-                        padding: const EdgeInsets.all(36),
-                        child: SizedBox(
-                          height: 300,
-                          width: 300,
-                          child: SvgPicture.asset('assets/app_icon.svg',
-                              semanticsLabel: 'app logo'),
-                        ),
-                      ),
+                    padding: const EdgeInsets.all(36),
+                    child: SizedBox(
+                      height: 300,
+                      width: 300,
+                      child: SvgPicture.asset('assets/app_icon.svg',
+                          semanticsLabel: 'app logo'),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Center(
@@ -296,7 +296,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
             // if our user is a volunteer, show different text
             if (getComputedAbilities(widget.userRoles).contains('volunteering')) {
-              int volunteerHours = (profileMap?['volunteerHours'] ?? 0).toInt();
+              int volunteerHours = ((profileMap?['processedVolunteerHours'] ?? profileMap?['volunteerHours']) ?? 0).toInt();
               subText = {
                 1: {
                   'title': 'Time to Lesson',

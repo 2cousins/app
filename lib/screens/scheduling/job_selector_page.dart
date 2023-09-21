@@ -26,6 +26,7 @@ Widget jobCard(BuildContext context,
     {PositionPadding position = PositionPadding.middle,
       required bool isAdmin,
       required bool isCompany,
+      bool showAssigned = false,
       List? times,
       required Map<String, dynamic> data}) {
   Color statusColour = (() {
@@ -40,6 +41,8 @@ Widget jobCard(BuildContext context,
   }());
 
   double screenWidth = MediaQuery.of(context).size.width;
+  showAssigned = showAssigned && data['assignedTo'] != null;
+  String? subtitleUser = showAssigned ? 'assignedTo' : 'createdBy';
 
   return Padding(
     padding: const EdgeInsets.fromLTRB(24.0, 6.0, 24.0, 6.0),
@@ -113,7 +116,7 @@ Widget jobCard(BuildContext context,
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => JobView(jobID: data['Job ID'], isCompany: isCompany)
+                      builder: (context) => JobView(jobID: data['Job ID'], isCompany: isCompany, isAdmin: isAdmin)
                   ));
             }
           },
@@ -180,7 +183,7 @@ Widget jobCard(BuildContext context,
                                           }
                                           Map<String, dynamic>? requirement = data["requirements"]["Subject ${itemNum + 1}"];
                                           return Card(
-                                            color: Theme.of(context).highlightColor,
+                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.15),
                                             shape: const RoundedRectangleBorder(
                                               borderRadius: BorderRadius.all(Radius.circular(8)),
                                             ),
@@ -257,19 +260,38 @@ Widget jobCard(BuildContext context,
                     Row(
                       children: [
                         SizedBox(
-                            height: 25,
-                            width: 25,
+                            height: (times?.isNotEmpty ?? false) ? 30 : 25,
+                            width: (times?.isNotEmpty ?? false) ? 30 : 25,
                             child: fetchProfilePicture(
-                                data['createdBy']['profilePicture'],
-                                data['createdBy']['pfpType'],
-                                data['createdBy']['username'])),
+                                data[subtitleUser]['profilePicture'],
+                                data[subtitleUser]['pfpType'],
+                                data[subtitleUser]['username'])),
                         const SizedBox(width: 10),
                         Expanded(
                             child: Text(
-                                "By ${data['createdBy']['username']}",
+                                "${showAssigned ? 'Assigned to' : 'By'} ${data[subtitleUser]['username']}",
                                 maxLines: 1)),
+                        // how many times available counter
+                        (times?.isNotEmpty ?? false) ? SizedBox(
+                          height: 35,
+                          child: Card(
+                            color: Theme.of(context).indicatorColor,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
+                              child: Text(
+                                "${times?.length ?? 0} availabilities",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ) : const SizedBox.shrink(),
                       ],
-                    )
+                    ),
                   ],
                 ),
               )),
