@@ -43,23 +43,7 @@ class _ScheduleViewState extends State<ScheduleView> {
 
     for (Map<String, dynamic> job in widget.jobList) {
       int dayOfWeek = DateTime.parse(job['lessonTimes']['start']).weekday;
-      String recurrenceDay = 'MO';
-
-      if (dayOfWeek == 1) {
-        recurrenceDay = 'MO';
-      } else if (dayOfWeek == 2) {
-        recurrenceDay = 'TU';
-      } else if (dayOfWeek == 3) {
-        recurrenceDay = 'WE';
-      } else if (dayOfWeek == 4) {
-        recurrenceDay = 'TH';
-      } else if (dayOfWeek == 5) {
-        recurrenceDay = 'FR';
-      } else if (dayOfWeek == 6) {
-        recurrenceDay = 'SA';
-      } else if (dayOfWeek == 7) {
-        recurrenceDay = 'SU';
-      }
+      String repeat = job['lessonTimes']['repeat'];
 
       list.add(Appointment(
           subject: job['Job Title'],
@@ -69,7 +53,7 @@ class _ScheduleViewState extends State<ScheduleView> {
           startTime: toLocalTime(DateTime.parse(job['lessonTimes']['start']), job['timezone']),
           endTime: toLocalTime(DateTime.parse(job['lessonTimes']['end']), job['timezone']),
           color: Theme.of(context).colorScheme.primary,
-          recurrenceRule: 'FREQ=WEEKLY;INTERVAL=1;BYDAY=$recurrenceDay'
+          recurrenceRule: getRecurrenceRule(dayOfWeek: dayOfWeek, repeat: repeat)
       ));
     }
 
@@ -80,7 +64,6 @@ class _ScheduleViewState extends State<ScheduleView> {
 
   void calendarTapped(CalendarTapDetails calendarTapDetails) {
     if (calendarTapDetails.appointments != null) {
-      print(calendarTapDetails.appointments!.first.id);
       Navigator.push(
           context,
           MaterialPageRoute(
@@ -96,6 +79,10 @@ class _ScheduleViewState extends State<ScheduleView> {
 
   @override
   Widget build(BuildContext context) {
+    List<Appointment> upcoming = _dataSource?.getVisibleAppointments(DateTime.now(), '', DateTime.now().add(const Duration(days: 7))) ?? [];
+    for (Appointment lesson in upcoming) {
+      print(lesson.startTime);
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(

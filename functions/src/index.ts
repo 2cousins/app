@@ -9,6 +9,7 @@ import { GaxiosError } from "gaxios";
 const {getStorage} = require("firebase-admin/storage");
 const calendar = google.calendar('v3');
 const googleCredentials = require('./credentials.json');
+import {datetime, Frequency, RRule, Weekday} from 'rrule';
 
 const MathExpression = require('math-expressions');
 const admin = require('firebase-admin');
@@ -18,6 +19,52 @@ const PdfPrinter = require('pdfmake');
 admin.initializeApp();
 
 const db = admin.firestore();
+
+function getRRule(date: Date, repeat: string) {
+    let frequency: Frequency | null = RRule.WEEKLY;
+    let interval: number = 1;
+    let weekday: Weekday[] = [RRule.MO];
+    if (repeat == 'daily') {
+        frequency = RRule.DAILY;
+    } else if (repeat == 'weekly') {
+        frequency = RRule.WEEKLY;
+    } else if (repeat == 'fortnightly') {
+        frequency = RRule.WEEKLY;
+        interval = 2;
+    } else if (repeat == 'monthly') {
+        frequency = RRule.MONTHLY;
+    } else if (repeat == 'once') {
+        return null;
+    }
+
+    if (date.getDay() == 0) {
+        weekday = [RRule.SU];
+    } else if (date.getDay() == 1) {
+        weekday = [RRule.MO];
+    } else if (date.getDay() == 2) {
+        weekday = [RRule.TU];
+    } else if (date.getDay() == 3) {
+        weekday = [RRule.WE];
+    } else if (date.getDay() == 4) {
+        weekday = [RRule.TH];
+    } else if (date.getDay() == 5) {
+        weekday = [RRule.FR];
+    } else if (date.getDay() == 6) {
+        weekday = [RRule.SA];
+    }
+
+    if (repeat == 'daily') {
+        weekday = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA, RRule.SU];
+    }
+
+    return new RRule({
+        freq: frequency,
+        interval: interval,
+        byweekday: weekday,
+        dtstart: date,
+        until: datetime(4000, 12, 31)
+    });
+}
 
 const timezoneToOffset: {[key: string]: number} = {
     'UTC': 0,
@@ -341,12 +388,18 @@ exports.claimJob = functions
         let timezone: string | null = data.timezone;
         let startTime: string | null = data.startTime;
         let endTime: string | null = data.endTime;
+        let repeat: string | null = data.repeat;
+        let recurrenceRule: string | null = data.recurrenceRule;
         if (!jobID) {
             throw new functions.https.HttpsError('invalid-argument', 'A job ID must be provided!');
         } else if (!startTime) {
             throw new functions.https.HttpsError('invalid-argument', 'A start time must be provided!');
         } else if (!endTime) {
             throw new functions.https.HttpsError('invalid-argument', 'An end time must be provided!');
+        } else if (!repeat) {
+            throw new functions.https.HttpsError('invalid-argument', 'The repeat frequency must be specified!');
+        } else if (!recurrenceRule) {
+            throw new functions.https.HttpsError('invalid-argument', 'A recurrence rule must be provided (can be "none" for no recurrence).');
         } else if (!timezone) {
             throw new functions.https.HttpsError('invalid-argument', 'A timezone must be provided!');
         } else if (context.auth?.uid == null) {
@@ -377,7 +430,7 @@ exports.claimJob = functions
                 },
             ];
 
-            const event = {
+            let event : { [name: string]: any } = {
                 id: googleResourceID,
                 summary: jobData['Job Title'],
                 location: '2cousins',
@@ -402,9 +455,6 @@ exports.claimJob = functions
                 reminders: {
                     useDefault: true,
                 },
-                "recurrence": [
-                    "RRULE:FREQ=WEEKLY;UNTIL=40110701T170000Z",
-                ],
                 conferenceData: {
                     createRequest: {
                         conferenceSolutionKey: {
@@ -419,6 +469,12 @@ exports.claimJob = functions
                     notes: "This is an official 2cousins meeting. By joining the room, you agree to the 2cousins terms of service and privacy policy.",
                 },
             };
+
+            if (recurrenceRule != 'none') {
+                event["recurrence"] = [
+                    recurrenceRule + ';UNTIL=40110701T170000Z',
+                ];
+            }
 
             const oAuth2Client = new google.auth.OAuth2(
                 googleCredentials.web.client_id,
@@ -454,7 +510,8 @@ exports.claimJob = functions
                 jobData['status'] = 'assigned';
                 jobData['lessonTimes'] = {
                     'start': startTime,
-                    'end': endTime
+                    'end': endTime,
+                    'repeat': repeat,
                 };
                 jobData['googleResourceID'] = googleResourceID;
                 jobData['meetUrl'] = uri;
@@ -573,103 +630,126 @@ exports.startShift = functions
                 hoursPerSubject = {};
             }
 
-            let lessonRunning: boolean = false;
-            // TODO: add in day of the week check
+            // TODO: server side check has been removed for convenience, would be good to add it back in again
+            // let lessonRunning: boolean = false;
+            //
+            // jobList.forEach((job) => {
+            //     let start: Date = new Date(job['lessonTimes']['start']);
+            //     let end: Date = new Date(job['lessonTimes']['end']);
+            //     console.log(`Start: ${start}, End: ${end}`);
+            //     console.log(`job['lessonTimes']['start']: ${job['lessonTimes']['start']}, job['lessonTimes']['end']: ${job['lessonTimes']['end']}`);
+            //     let now: Date = new Date(new Date().toLocaleString('en', {timeZone: job['timezone']}));
+            //
+            //     if (new Date(now.getFullYear(), now.getMonth(), now.getDate(), start.getHours(), start.getMinutes(), 0) <= now
+            //         && now <= new Date(now.getFullYear(), now.getMonth(), now.getDate(), end.getHours(), end.getMinutes(), 0)) {
+            //         lessonRunning = true;
+            //     }
+            // });
+            //
+            // if (!starting) {
+            //
+            // } else {
+            //     throw new functions.https.HttpsError('unauthenticated', 'Volunteer hours cannot be counted if the lesson is not currently running');
+            // }
 
-            jobList.forEach((job) => {
-                let start: Date = new Date(job['lessonTimes']['start']);
-                let end: Date = new Date(job['lessonTimes']['end']);
-                console.log(`Start: ${start}, End: ${end}`);
-                console.log(`job['lessonTimes']['start']: ${job['lessonTimes']['start']}, job['lessonTimes']['end']: ${job['lessonTimes']['end']}`);
-                let now: Date = new Date(new Date().toLocaleString('en', {timeZone: job['timezone']}));
+            // save lesson started data to firestore volunteerRecord
+            if (starting) {
+                let volunteerRecord: DocumentData[] = profileData['volunteerRecord'];
+                volunteerRecord.push({'start': new Date()});
+                await publicProfile.update({'volunteerRecord': volunteerRecord});
 
-                if (new Date(now.getFullYear(), now.getMonth(), now.getDate(), start.getHours(), start.getMinutes(), 0) <= now
-                    && now <= new Date(now.getFullYear(), now.getMonth(), now.getDate(), end.getHours(), end.getMinutes(), 0)) {
-                    lessonRunning = true;
-                }
-            });
-
-            if (lessonRunning || !starting) {
-                // save lesson started data to firestore volunteerRecord
-                if (starting) {
-                    let volunteerRecord: DocumentData[] = profileData['volunteerRecord'];
-                    volunteerRecord.push({'start': new Date()});
-                    await publicProfile.update({'volunteerRecord': volunteerRecord});
-
-                    console.log(`Volunteer ${context.auth!.uid} started their lesson ${jobID}!`);
-                } else {
-                    // the lesson is ending but make sure to double-check
-                    let volunteerRecord: DocumentData[] = profileData['volunteerRecord'];
-                    let previous = volunteerRecord.pop();
-
-                    if (previous == undefined || previous['end'] != null) {
-                        throw new functions.https.HttpsError('unauthenticated', 'An error seems to have occurred where you ended a lesson that never started.');
-                    } else {
-                        let job: DocumentData | undefined = jobList.find((job) => job['ID'] == jobID);
-
-                        if (job == undefined) {
-                            throw new functions.https.HttpsError('unauthenticated', 'An error seems to have occurred where you ended a lesson that you never claimed.');
-                        }
-
-                        let now: Date = new Date(new Date().toLocaleString('en', {timeZone: job['timezone']}));
-                        console.log(`Starting end is ${job['lessonTimes']['end']}`);
-                        let end: Date = new Date(job['lessonTimes']['end']);
-                        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), end.getHours(), end.getMinutes(), 0);
-
-                        console.log(`right now is ${now}`);
-                        console.log(`end is ${end}`);
-
-                        if (now > end) {
-                            // recalculate date accounting for timezone difference in storage
-                            previous['end'] = new Date(end.getTime() - timezoneToOffset[job['timezone']]);
-                        } else {
-                            previous['end'] = new Date();
-                        }
-
-                        volunteerRecord.push(previous);
-                    }
-
-                    // finally, update the number of hours the volunteer has volunteered
-                    let volunteerHours: number | null = profileData['volunteerHours'];
-                    if (volunteerHours == null) {
-                        volunteerHours = 0;
-                    }
-
-                    const timestamp: firestore.Timestamp = previous['start'];
-
-                    let start: Date = timestamp.toDate();
-                    let end: Date = previous['end'];
-
-                    console.log(`Type of start: ${typeof start}`);
-                    console.log(`Type of end: ${typeof end}`);
-                    console.log(`Start: ${start}, End: ${end}`);
-                    let hoursVolunteeredNow: number = Math.abs(end.getTime() - start.getTime()) / 3.6e6;
-                    volunteerHours += hoursVolunteeredNow
-
-                    // processed volunteer hours based on country
-                    let processedVolunteerHours: number = 0;
-                    if (country === 'US') {
-                        processedVolunteerHours = 4 * volunteerHours;
-                    } else {
-                        processedVolunteerHours = 2 * volunteerHours;
-                    }
-
-                    // add hours volunteered now to hoursPerSubject
-                    if (hoursPerSubject[jobID] != undefined) {
-                        hoursPerSubject[jobID]['hours'] = hoursPerSubject[jobID]['hours'] + hoursVolunteeredNow
-                    }
-
-                    await publicProfile.update({
-                        'volunteerRecord': volunteerRecord,
-                        'volunteerHours': volunteerHours,
-                        'hoursPerSubject': hoursPerSubject,
-                        'processedVolunteerHours': processedVolunteerHours,
-                    });
-
-                    console.log(`Volunteering has finished for ${context.auth?.uid} in lesson ${jobID}. Hours volunteered now is ${hoursVolunteeredNow} with total of ${volunteerHours} volunteer hours globally.`);
-                }
+                console.log(`Volunteer ${context.auth!.uid} started their lesson ${jobID}!`);
             } else {
-                throw new functions.https.HttpsError('unauthenticated', 'Volunteer hours cannot be counted if the lesson is not currently running');
+                // the lesson is ending but make sure to double-check
+                let volunteerRecord: DocumentData[] = profileData['volunteerRecord'];
+                let previous = volunteerRecord.pop();
+
+                if (previous == undefined || previous['end'] != null) {
+                    throw new functions.https.HttpsError('unauthenticated', 'An error seems to have occurred where you ended a lesson that never started.');
+                } else {
+                    let job: DocumentData | undefined = jobList.find((job) => job['ID'] == jobID);
+
+                    if (job == undefined) {
+                        throw new functions.https.HttpsError('unauthenticated', 'An error seems to have occurred where you ended a lesson that you never claimed.');
+                    }
+
+                    let lessonTimes: DocumentData = job['lessonTimes'];
+                    const lessonTimeEnd: Date = new Date(Date.parse(lessonTimes['end']) - timezoneToOffset[job['timezone']]);
+                    let repeatRule: RRule | null = getRRule(lessonTimeEnd, lessonTimes['repeat']);
+
+                    // factor in timezone for "now"
+                    let now: Date = new Date();
+                    const timestamp: firestore.Timestamp = previous['start'];
+                    let start: Date = timestamp.toDate();
+
+                    let intendedEnd: Date | null = null;
+
+                    if (repeatRule == null) {
+                        intendedEnd = lessonTimeEnd;
+                    } else {
+                        // checks in between start time and 20 minutes past start time
+                        let dateList: Date[] = repeatRule.between(start, new Date(now.getTime() + ((20*60*1000))))
+                        if (dateList.length == 0) {
+                            intendedEnd = null;
+                        } else {
+                            intendedEnd = dateList[0];
+                        }
+                    }
+
+                    if (intendedEnd == null) {
+                        previous['end'] = start;
+                    } else {
+                        console.log(`now > intendedEnd: ${now > intendedEnd}`);
+                        console.log(`now: ${now}, end: ${intendedEnd}`);
+                        if (now > intendedEnd) {
+                            // if lesson as already ended, set to intended end
+                            previous['end'] = intendedEnd;
+                        } else {
+                            previous['end'] = now;
+                        }
+                    }
+
+                    volunteerRecord.push(previous);
+                }
+
+                // finally, update the number of hours the volunteer has volunteered
+                let volunteerHours: number | null = profileData['volunteerHours'];
+                if (volunteerHours == null) {
+                    volunteerHours = 0;
+                }
+
+                const timestamp: firestore.Timestamp = previous['start'];
+
+                let start: Date = timestamp.toDate();
+                let end: Date = previous['end'];
+
+                console.log(`Type of start: ${typeof start}`);
+                console.log(`Type of end: ${typeof end}`);
+                console.log(`Start: ${start}, End: ${end}`);
+                let hoursVolunteeredNow: number = Math.abs(end.getTime() - start.getTime()) / 3.6e6;
+                volunteerHours += hoursVolunteeredNow
+
+                // processed volunteer hours based on country
+                let processedVolunteerHours: number = 0;
+                if (country === 'US') {
+                    processedVolunteerHours = 4 * volunteerHours;
+                } else {
+                    processedVolunteerHours = 2 * volunteerHours;
+                }
+
+                // add hours volunteered now to hoursPerSubject
+                if (hoursPerSubject[jobID] != undefined) {
+                    hoursPerSubject[jobID]['hours'] = hoursPerSubject[jobID]['hours'] + hoursVolunteeredNow
+                }
+
+                await publicProfile.update({
+                    'volunteerRecord': volunteerRecord,
+                    'volunteerHours': volunteerHours,
+                    'hoursPerSubject': hoursPerSubject,
+                    'processedVolunteerHours': processedVolunteerHours,
+                });
+
+                console.log(`Volunteering has finished for ${context.auth?.uid} in lesson ${jobID}. Hours volunteered now is ${hoursVolunteeredNow} with total of ${volunteerHours} volunteer hours globally.`);
             }
         }
     });
