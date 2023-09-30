@@ -1,11 +1,7 @@
 import 'package:two_cousins/screens/scheduling/schedule_view.dart';
 import 'package:flutter/material.dart';
-import 'package:googleapis/admob/v1.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-
-import '../screens/scheduling/availability_page.dart';
-import '../utils/components.dart';
 
 Widget lessonCountdown(Map<String, dynamic>? profileMap) {
   // find the most recent lesson that happened
